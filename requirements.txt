@@ -1,0 +1,2 @@
+# Standard library is enough for the base assistant.
+# Add extra libraries only when needed for a specific integration.

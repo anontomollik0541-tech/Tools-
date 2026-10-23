@@ -1,11 +1,35 @@
-<div align="center">
+# Network diagnostics assistant
+#
+# This project provides a legitimate, authorized network monitoring scaffold for:
+# - OLT / ONU / PON diagnostics
+# - MikroTik router health tracking
+# - WiFi quality and interference checks
+# - root-cause classification for intermittent network drops
+#
+# It is intended for monitoring networks you own or administer.
+#
+# Features:
+# - English and Bangla language support
+# - Demo snapshot parsing
+# - Fault classification and reports
+# - API-ready diagnostics output
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+from __future__ import annotations
 
-  <h1>Built with AI Studio</h2>
+from network_diag.collectors import build_demo_snapshot
+from network_diag.reporting import generate_report
+from network_diag.rules import classify_faults, summarize_network_health
 
-  <p>The fastest path from prompt to production with Gemini.</p>
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+def run_diagnostics(language: str = "en") -> str:
+    snapshot = build_demo_snapshot()
+    issues = classify_faults(snapshot)
+    summary = summarize_network_health(snapshot, language=language)
+    report = generate_report(snapshot, issues, language=language)
+    return f"{summary}\n\n{report}"
 
-</div>
+
+if __name__ == "__main__":
+    print(run_diagnostics("en"))
+    print("\n--- Bangla ---\n")
+    print(run_diagnostics("bn"))

@@ -1,0 +1,4 @@
+{
+  "name": "Termux NOC Diagnostics",
+  "description": "Network Operations Center and sysadmin diagnostic console with optical PON telemetry, WiFi RF spectrum analysis, MikroTik router health tracking, fault classification engine, and Termux-style assistant with bilingual reporting."
+}
