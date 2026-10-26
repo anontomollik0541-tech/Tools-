@@ -102,7 +102,7 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Fiber optical power levels (dBm), LOS alarm ebong CRC drop check kore.',
     command: 'optical',
     githubUrl: 'https://github.com/termux/termux-packages',
-    isTrue: false, // Default snapshot has fiber anomaly for realistic NOC detection
+    isTrue: undefined, // No live test has run yet
   },
 ];
 
@@ -112,23 +112,18 @@ export function loadAllTools(): ToolItem[] {
   try {
     const custom = localStorage.getItem(STORAGE_KEY);
     if (!custom) return DEFAULT_TOOLS;
-    const parsed = JSON.parse(custom) as ToolItem[];
-    // Merge default with custom
-    const customMap = new Map(parsed.map(t => [t.id, t]));
-    const result: ToolItem[] = [];
-    
-    // Add defaults
-    for (const d of DEFAULT_TOOLS) {
-      if (customMap.has(d.id)) {
-        result.push(customMap.get(d.id)!);
-        customMap.delete(d.id);
-      } else {
-        result.push(d);
-      }
-    }
-    // Add user custom tools
-    result.push(...customMap.values());
-    return result;
+    const parsed: unknown = JSON.parse(custom);
+    if (!Array.isArray(parsed)) return DEFAULT_TOOLS;
+    const validCustom = parsed.filter((item): item is ToolItem =>
+      typeof item === 'object' && item !== null &&
+      typeof (item as ToolItem).id === 'string' &&
+      typeof (item as ToolItem).name === 'string' &&
+      typeof (item as ToolItem).command === 'string' &&
+      typeof (item as ToolItem).description === 'string' &&
+      ['network', 'website', 'social', 'security', 'termux'].includes(String((item as ToolItem).category)) &&
+      (item as ToolItem).isCustom === true
+    );
+    return [...DEFAULT_TOOLS, ...validCustom];
   } catch {
     return DEFAULT_TOOLS;
   }
