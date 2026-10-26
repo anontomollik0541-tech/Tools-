@@ -24,7 +24,6 @@ jobs:
           from pathlib import Path
           data = json.loads(Path('result.json').read_text())
           assert isinstance(data, dict)
-          assert 'ওএলটি_ফাইবার_টেলিমетрি' not in data
           optical = data['ওএলটি_ফাইবার_টেলিমетрি']
           assert optical.get('অবস্থা') == 'NOT TESTED'
           assert '-26.2 dBm' not in json.dumps(data, ensure_ascii=False)
