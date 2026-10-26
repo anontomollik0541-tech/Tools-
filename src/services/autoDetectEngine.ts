@@ -17,7 +17,7 @@ export async function runAutoDetectSuite(snapshot: NetworkSnapshot): Promise<Aut
     const isFast = isReachable && pingRes.latencyMs < 250;
     results.push({
       toolId: 'tool-ping',
-      name: 'Internet Gateway Latency (Ping)',
+      name: 'Internet HTTP Reachability Probe',
       category: 'network',
       isTrue: isReachable ? isFast : false,
       statusText: !isReachable ? 'Probe failed / unreachable' : isFast ? `HTTP probe (${pingRes.latencyMs}ms)` : `Slow HTTP probe (${pingRes.latencyMs}ms)`,
