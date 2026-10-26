@@ -32,7 +32,7 @@ export interface AutoDetectResult {
   toolId: string;
   name: string;
   category: ToolCategory;
-  isTrue: boolean; // true = nominal/pass, false = issue detected/failed
+  isTrue?: boolean; // true = pass, false = alert/failure, undefined = not tested/unknown
   statusText: string;
   details: string;
   recommendedCommand?: string;
