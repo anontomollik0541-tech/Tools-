@@ -216,7 +216,9 @@ export const ToolsDashboard: React.FC<ToolsDashboardProps> = ({
                       className={`flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
                         tool.isTrue === true
                           ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
-                          : 'bg-red-950/80 text-red-400 border border-red-800/60'
+                          : tool.isTrue === false
+                          ? 'bg-red-950/80 text-red-400 border border-red-800/60'
+                          : 'bg-amber-950/80 text-amber-300 border border-amber-800/60'
                       }`}
                     >
                       {tool.isTrue === true ? (
