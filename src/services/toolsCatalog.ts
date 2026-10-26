@@ -11,7 +11,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'OLT ONU fibre power, WiFi signal ebong ping drop test kore Bangla JSON format e result dey.',
     command: 'python3 ai_noc_diagnostic.py 10.10.20.5 vsol 1 12',
     githubUrl: 'https://github.com/termux/termux-packages',
-    isTrue: true,
   },
   // Network Tools
   {
@@ -23,7 +22,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Server er ping latency, packet loss ebong jitter check kore.',
     command: 'ping 1.1.1.1',
     githubUrl: 'https://github.com/iputils/iputils',
-    isTrue: true,
   },
   {
     id: 'tool-dns',
@@ -34,7 +32,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Cloudflare DoH diye kono domain er A, MX, TXT record dekhe.',
     command: 'dns cloudflare.com',
     githubUrl: 'https://github.com/NLnetLabs/ldns',
-    isTrue: true,
   },
   {
     id: 'tool-headers',
@@ -45,7 +42,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Website er HSTS, CSP, CORS ebong security headers test kore.',
     command: 'curl -I https://github.com',
     githubUrl: 'https://github.com/curl/curl',
-    isTrue: true,
   },
   {
     id: 'tool-social',
@@ -56,7 +52,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'GitHub, X, Telegram, Reddit e username er profile link check kore.',
     command: 'social check @anondev',
     githubUrl: 'https://github.com/sherlock-project/sherlock',
-    isTrue: true,
   },
   {
     id: 'tool-webrtc',
@@ -67,7 +62,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Browser e WebRTC theke real IP leak hocche kina test kore.',
     command: 'leakcheck',
     githubUrl: 'https://github.com/termux/termux-app',
-    isTrue: true,
   },
   {
     id: 'tool-nmap',
@@ -78,7 +72,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Network er open ports ebong active services scan korar tool.',
     command: 'nmap -F 192.168.1.1',
     githubUrl: 'https://github.com/nmap/nmap',
-    isTrue: true,
   },
   {
     id: 'tool-whois',
@@ -89,7 +82,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Domain kobe register hoise, name servers ki shob dekhe.',
     command: 'whois google.com',
     githubUrl: 'https://github.com/rfc1036/whois',
-    isTrue: true,
   },
   {
     id: 'tool-malwarescan',
@@ -100,7 +92,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Device permissions, flash plugin risk ebong background process check.',
     command: 'malwarescan',
     githubUrl: 'https://github.com/clamav/clamav',
-    isTrue: true,
   },
   {
     id: 'tool-optical',
@@ -156,7 +147,6 @@ export function addCustomTool(tool: Omit<ToolItem, 'id'>): ToolItem {
     ...tool,
     id: `custom-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
     isCustom: true,
-    isTrue: true,
   };
   const current = loadAllTools();
   current.push(newTool);
