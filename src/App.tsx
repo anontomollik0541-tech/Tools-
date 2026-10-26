@@ -188,7 +188,7 @@ export const App: React.FC = () => {
           type: 'system',
           content: `[Auto-Detect Complete] Evaluated ${results.length} checks. ${
             results.filter((r) => r.isTrue).length
-          } Passed (TRUE), ${results.filter((r) => !r.isTrue).length} Issues (FALSE). Telemetry posted to AI chat.`,
+          } Passed, ${results.filter((r) => r.isTrue === false).length} Alerts, ${results.filter((r) => r.isTrue === undefined).length} Unknown / not tested. Snapshot telemetry may be demo data, not live hardware.`,
           timestamp: new Date().toLocaleTimeString(),
         },
       ]);
