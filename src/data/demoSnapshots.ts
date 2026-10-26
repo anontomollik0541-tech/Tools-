@@ -88,7 +88,7 @@ export const DEMO_SNAPSHOT: NetworkSnapshot = {
 export const SCENARIOS: Record<string, { label: string; description: string; snapshot: NetworkSnapshot }> = {
   demo: {
     label: 'Standard Demo (Mixed Faults)',
-    description: 'Realistic production state with optical attenuation on PON-1, 5G WiFi interference, and MikroTik CPU load.',
+    description: 'SIMULATED DEMO DATA only: optical attenuation on PON-1, 5G WiFi interference, and MikroTik CPU load. Not connected to live hardware.',
     snapshot: DEMO_SNAPSHOT,
   },
   fiber_cut: {
