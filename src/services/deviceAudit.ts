@@ -32,11 +32,12 @@ export async function testWebRTCLeak(): Promise<WebRTCLeakResult> {
       const timeout = setTimeout(() => {
         pc.close();
         const hasLeak = localIps.size > 0 || publicIps.size > 0;
+        // No candidates may mean STUN/network failure, not proof of protection.
         resolve({
           localIps: Array.from(localIps),
           publicIps: Array.from(publicIps),
           hasLeak,
-          status: hasLeak ? 'leaked' : 'clean',
+          status: hasLeak ? 'leaked' : 'unknown',
         });
       }, 2500);
 
