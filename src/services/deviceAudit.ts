@@ -405,7 +405,7 @@ export async function runFullDeviceAudit(simulateLeak: boolean = false): Promise
     en: [
       webrtc.hasLeak || simulateLeak
         ? 'Enable WebRTC IP handling policy in browser settings (e.g., disable WebRTC non-proxied UDP in uBlock Origin or Brave).'
-        : 'WebRTC shield is active. No IP candidates leaked.',
+        : webrtc.status === 'unknown' ? 'WebRTC test unavailable; protection status is unknown.' : 'No IP candidates observed in this test; this does not guarantee VPN protection.',
       flash === 'present'
         ? 'Uninstall and purge Adobe Flash immediately; it is discontinued and vulnerable to remote execution.'
         : 'Flash is disabled/purged. Zero Flash exploit surface.',
