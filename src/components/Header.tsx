@@ -105,8 +105,8 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
             <span>{language === 'bn' ? 'NOC ডায়াগনস্টিকস' : language === 'banglish' ? 'NOC Diag' : 'NOC Diagnostics'}</span>
-            <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-mono font-bold">
-              100%
+            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800/60 font-mono font-bold">
+              DEMO
             </span>
           </button>
 
