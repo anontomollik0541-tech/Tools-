@@ -79,27 +79,64 @@ Authorization: Bearer sk-ant-api03-abcdef1234567890`;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-
+    if (file.size > 2 * 1024 * 1024) {
+      setImportStatus('Import rejected: file exceeds the 2 MiB limit.');
+      return;
+    }
     const reader = new FileReader();
+    reader.onerror = () => setImportStatus('Import failed: unable to read the selected file.');
     reader.onload = (event) => {
       try {
-        const content = event.target?.result as string;
-        const parsed = JSON.parse(content);
-
-        // Check if it's tools array
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].command) {
-          onImportTools(parsed as ToolItem[]);
-          setImportStatus(`Successfully imported ${parsed.length} tools!`);
-        } else if (parsed.optical && parsed.wifi && parsed.routers) {
-          // It's a network snapshot
-          onImportSnapshot(parsed as NetworkSnapshot);
-          setImportStatus('Successfully loaded imported network snapshot!');
-        } else {
-          setImportStatus('Imported file unrecognized JSON format.');
+        const text = event.target?.result;
+        if (typeof text !== 'string') {
+          setImportStatus('Import failed: file content is not text.');
+          return;
         }
-      } catch (err) {
-        setImportStatus('Failed to parse JSON file.');
+        const parsed: unknown = JSON.parse(text);
+        const isRecord = (v: unknown): v is Record<string, unknown> =>
+          typeof v === 'object' && v !== null && !Array.isArray(v);
+        const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+        const isTools = (v: unknown): v is ToolItem[] =>
+          Array.isArray(v) && v.length > 0 && v.length <= 500 && v.every((item) =>
+            isRecord(item) && typeof item.id === 'string' && item.id.length > 0 &&
+            typeof item.name === 'string' && item.name.trim().length > 0 &&
+            ['network', 'website', 'social', 'security', 'termux'].includes(String(item.category)) &&
+            typeof item.description === 'string' && typeof item.command === 'string' &&
+            item.command.trim().length > 0 &&
+            (item.githubUrl === undefined || (typeof item.githubUrl === 'string' &&
+              (item.githubUrl === '' || /^https:\/\//i.test(item.githubUrl)))) &&
+            (item.isTrue === undefined || typeof item.isTrue === 'boolean'));
+        const isSnapshot = (v: unknown): v is NetworkSnapshot => {
+          if (!isRecord(v) || typeof v.timestamp !== 'string' || !Number.isFinite(Date.parse(v.timestamp)) ||
+              !Array.isArray(v.optical) || !Array.isArray(v.wifi) ||
+              !Array.isArray(v.routers) || !Array.isArray(v.olt)) return false;
+          return v.optical.every((x) => isRecord(x) && typeof x.onu_id === 'string' &&
+            typeof x.port === 'string' && isNum(x.rx_dbm) && isNum(x.tx_dbm) &&
+            typeof x.los_alarm === 'boolean' && isNum(x.crc_errors) && isNum(x.drop_count)) &&
+            v.wifi.every((x) => isRecord(x) && typeof x.ssid === 'string' && isNum(x.channel) &&
+              isNum(x.rssi_dbm) && isNum(x.noise_dbm) && isNum(x.snr_dbm) && isNum(x.clients) &&
+              isNum(x.channel_utilization) && isNum(x.packet_loss_pct)) &&
+            v.routers.every((x) => isRecord(x) && typeof x.device_name === 'string' &&
+              isNum(x.cpu_percent) && isNum(x.memory_used_pct) && isNum(x.uptime_hours) &&
+              isNum(x.interface_errors) && isNum(x.pppoe_flaps) && isNum(x.dhcp_failures) && isNum(x.route_flaps)) &&
+            v.olt.every((x) => isRecord(x) && typeof x.olt_name === 'string' && typeof x.port === 'string' &&
+              (x.port_state === 'up' || x.port_state === 'down') && isNum(x.onu_count) &&
+              Array.isArray(x.alarms) && x.alarms.every((alarm) => typeof alarm === 'string') &&
+              (x.power_dbm === undefined || isNum(x.power_dbm)));
+        };
+        if (isTools(parsed)) {
+          onImportTools(parsed);
+          setImportStatus(`Validated and imported ${parsed.length} tools.`);
+        } else if (isSnapshot(parsed)) {
+          onImportSnapshot(parsed);
+          setImportStatus('Validated and loaded snapshot. Imported telemetry is not verified live data.');
+        } else {
+          setImportStatus('Import rejected: JSON does not match a valid tools list or network snapshot schema.');
+        }
+      } catch {
+        setImportStatus('Import failed: invalid JSON.');
       }
     };
     reader.readAsText(file);
