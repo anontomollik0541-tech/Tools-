@@ -70,7 +70,7 @@ export const ToolsDashboard: React.FC<ToolsDashboardProps> = ({
       category: newToolCategory,
       description: newToolDesc.trim() || 'Custom user utility added via manual collector.',
       isCustom: true,
-      isTrue: true,
+      isTrue: undefined,
     });
 
     setNewToolName('');
@@ -214,20 +214,22 @@ export const ToolsDashboard: React.FC<ToolsDashboardProps> = ({
                     {/* True / False Status indicator */}
                     <div
                       className={`flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                        tool.isTrue !== false
+                        tool.isTrue === true
                           ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60'
-                          : 'bg-red-950/80 text-red-400 border border-red-800/60'
+                          : tool.isTrue === false
+                          ? 'bg-red-950/80 text-red-400 border border-red-800/60'
+                          : 'bg-amber-950/80 text-amber-300 border border-amber-800/60'
                       }`}
                     >
-                      {tool.isTrue !== false ? (
+                      {tool.isTrue === true ? (
                         <>
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>TRUE</span>
+                          <span>PASS</span>
                         </>
                       ) : (
                         <>
                           <XCircle className="w-3 h-3" />
-                          <span>FALSE</span>
+                          <span>{tool.isTrue === false ? 'ALERT' : 'NOT TESTED'}</span>
                         </>
                       )}
                     </div>

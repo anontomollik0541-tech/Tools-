@@ -11,7 +11,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'OLT ONU fibre power, WiFi signal ebong ping drop test kore Bangla JSON format e result dey.',
     command: 'python3 ai_noc_diagnostic.py 10.10.20.5 vsol 1 12',
     githubUrl: 'https://github.com/termux/termux-packages',
-    isTrue: true,
   },
   // Network Tools
   {
@@ -23,7 +22,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Server er ping latency, packet loss ebong jitter check kore.',
     command: 'ping 1.1.1.1',
     githubUrl: 'https://github.com/iputils/iputils',
-    isTrue: true,
   },
   {
     id: 'tool-dns',
@@ -34,7 +32,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Cloudflare DoH diye kono domain er A, MX, TXT record dekhe.',
     command: 'dns cloudflare.com',
     githubUrl: 'https://github.com/NLnetLabs/ldns',
-    isTrue: true,
   },
   {
     id: 'tool-headers',
@@ -45,7 +42,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Website er HSTS, CSP, CORS ebong security headers test kore.',
     command: 'curl -I https://github.com',
     githubUrl: 'https://github.com/curl/curl',
-    isTrue: true,
   },
   {
     id: 'tool-social',
@@ -56,7 +52,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'GitHub, X, Telegram, Reddit e username er profile link check kore.',
     command: 'social check @anondev',
     githubUrl: 'https://github.com/sherlock-project/sherlock',
-    isTrue: true,
   },
   {
     id: 'tool-webrtc',
@@ -67,7 +62,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Browser e WebRTC theke real IP leak hocche kina test kore.',
     command: 'leakcheck',
     githubUrl: 'https://github.com/termux/termux-app',
-    isTrue: true,
   },
   {
     id: 'tool-nmap',
@@ -78,7 +72,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Network er open ports ebong active services scan korar tool.',
     command: 'nmap -F 192.168.1.1',
     githubUrl: 'https://github.com/nmap/nmap',
-    isTrue: true,
   },
   {
     id: 'tool-whois',
@@ -89,7 +82,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Domain kobe register hoise, name servers ki shob dekhe.',
     command: 'whois google.com',
     githubUrl: 'https://github.com/rfc1036/whois',
-    isTrue: true,
   },
   {
     id: 'tool-malwarescan',
@@ -100,7 +92,6 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Device permissions, flash plugin risk ebong background process check.',
     command: 'malwarescan',
     githubUrl: 'https://github.com/clamav/clamav',
-    isTrue: true,
   },
   {
     id: 'tool-optical',
@@ -111,7 +102,7 @@ export const DEFAULT_TOOLS: ToolItem[] = [
     descriptionBanglish: 'Fiber optical power levels (dBm), LOS alarm ebong CRC drop check kore.',
     command: 'optical',
     githubUrl: 'https://github.com/termux/termux-packages',
-    isTrue: false, // Default snapshot has fiber anomaly for realistic NOC detection
+    isTrue: undefined, // No live test has run yet
   },
 ];
 
@@ -121,23 +112,18 @@ export function loadAllTools(): ToolItem[] {
   try {
     const custom = localStorage.getItem(STORAGE_KEY);
     if (!custom) return DEFAULT_TOOLS;
-    const parsed = JSON.parse(custom) as ToolItem[];
-    // Merge default with custom
-    const customMap = new Map(parsed.map(t => [t.id, t]));
-    const result: ToolItem[] = [];
-    
-    // Add defaults
-    for (const d of DEFAULT_TOOLS) {
-      if (customMap.has(d.id)) {
-        result.push(customMap.get(d.id)!);
-        customMap.delete(d.id);
-      } else {
-        result.push(d);
-      }
-    }
-    // Add user custom tools
-    result.push(...customMap.values());
-    return result;
+    const parsed: unknown = JSON.parse(custom);
+    if (!Array.isArray(parsed)) return DEFAULT_TOOLS;
+    const validCustom = parsed.filter((item): item is ToolItem =>
+      typeof item === 'object' && item !== null &&
+      typeof (item as ToolItem).id === 'string' &&
+      typeof (item as ToolItem).name === 'string' &&
+      typeof (item as ToolItem).command === 'string' &&
+      typeof (item as ToolItem).description === 'string' &&
+      ['network', 'website', 'social', 'security', 'termux'].includes(String((item as ToolItem).category)) &&
+      (item as ToolItem).isCustom === true
+    );
+    return [...DEFAULT_TOOLS, ...validCustom];
   } catch {
     return DEFAULT_TOOLS;
   }
@@ -156,7 +142,6 @@ export function addCustomTool(tool: Omit<ToolItem, 'id'>): ToolItem {
     ...tool,
     id: `custom-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
     isCustom: true,
-    isTrue: true,
   };
   const current = loadAllTools();
   current.push(newTool);

@@ -32,11 +32,12 @@ export async function testWebRTCLeak(): Promise<WebRTCLeakResult> {
       const timeout = setTimeout(() => {
         pc.close();
         const hasLeak = localIps.size > 0 || publicIps.size > 0;
+        // No candidates may mean STUN/network failure, not proof of protection.
         resolve({
           localIps: Array.from(localIps),
           publicIps: Array.from(publicIps),
           hasLeak,
-          status: hasLeak ? 'leaked' : 'clean',
+          status: hasLeak ? 'leaked' : 'unknown',
         });
       }, 2500);
 
@@ -405,7 +406,7 @@ export async function runFullDeviceAudit(simulateLeak: boolean = false): Promise
     en: [
       webrtc.hasLeak || simulateLeak
         ? 'Enable WebRTC IP handling policy in browser settings (e.g., disable WebRTC non-proxied UDP in uBlock Origin or Brave).'
-        : 'WebRTC shield is active. No IP candidates leaked.',
+        : webrtc.status === 'unknown' ? 'WebRTC test unavailable; protection status is unknown.' : 'No IP candidates observed in this test; this does not guarantee VPN protection.',
       flash === 'present'
         ? 'Uninstall and purge Adobe Flash immediately; it is discontinued and vulnerable to remote execution.'
         : 'Flash is disabled/purged. Zero Flash exploit surface.',

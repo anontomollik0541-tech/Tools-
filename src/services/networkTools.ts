@@ -61,16 +61,8 @@ export async function queryDnsDoH(domain: string, type: string = 'A'): Promise<D
       rawAnswer: data,
     };
   } catch {
-    // Fallback simulated records if CORS or network blocks direct DoH
-    return {
-      domain: cleanDomain,
-      status: 0,
-      records: [
-        { name: cleanDomain, type: 1, typeName: 'A', TTL: 300, data: '104.21.58.192' },
-        { name: cleanDomain, type: 1, typeName: 'A', TTL: 300, data: '172.67.189.44' },
-        { name: cleanDomain, type: 28, typeName: 'AAAA', TTL: 300, data: '2606:4700:3033::6815:3ac0' },
-      ],
-    };
+    // Never fabricate DNS answers when the live query fails.
+    return { domain: cleanDomain, status: 0, records: [] };
   }
 }
 
@@ -98,13 +90,8 @@ export async function testHttpPing(targetUrl: string): Promise<{ latencyMs: numb
       target: url,
     };
   } catch {
-    // Try pinging with an image probe or fallback
-    const latencyMs = Math.round(performance.now() - start);
-    return {
-      latencyMs: latencyMs > 0 ? latencyMs : 84,
-      status: 'online',
-      target: url,
-    };
+    // A failed probe is not proof that the host is online.
+    return { latencyMs: Math.round(performance.now() - start), status: 'unreachable', target: url };
   }
 }
 
