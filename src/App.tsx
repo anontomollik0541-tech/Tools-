@@ -23,6 +23,7 @@ import { loadAllTools, saveTools, addCustomTool, removeTool } from './services/t
 import { analyzeUserInputOrLog, buildAutoDetectReportMessage } from './services/aiEngine';
 import { runAutoDetectSuite } from './services/autoDetectEngine';
 import { DEFAULT_PRIVACY_SETTINGS } from './services/privacyGuard';
+import { buildConversationContext } from './services/conversationKnowledge';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'terminal' | 'chat' | 'noc' | 'tools' | 'device'>('terminal');
@@ -137,10 +138,31 @@ export const App: React.FC = () => {
     // Analyze query or pasted terminal error log
     setTimeout(() => {
       const analysis = analyzeUserInputOrLog(text, language, tools);
+      const context = buildConversationContext(text);
+      const contextSections: string[] = [];
+      if (context.relevantKnowledge.length > 0) {
+        contextSections.push(
+          language === 'bn'
+            ? '\n\n[আপনার সংরক্ষিত Knowledge — স্থানীয় নোট]\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\n')
+            : language === 'banglish'
+              ? '\n\n[Tomar saved Knowledge — local notes]\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\n')
+              : '\n\n[Relevant saved knowledge — local notes]\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\n')
+        );
+      }
+      if (context.relevantMemories.length > 0) {
+        contextSections.push(
+          language === 'bn'
+            ? '\n\n[আপনার অনুমোদিত প্রাসঙ্গিক Memory]\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\n')
+            : language === 'banglish'
+              ? '\n\n[Tomar approved relevant memory]\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\n')
+              : '\n\n[Relevant approved memory]\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\n')
+        );
+      }
+      const replyText = analysis.text + contextSections.join('');
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: analysis.text,
+        text: replyText,
         timestamp: new Date().toLocaleTimeString(),
         language,
         suggestedCommand: analysis.suggestedCommand,
