@@ -143,19 +143,19 @@ export const App: React.FC = () => {
       if (context.relevantKnowledge.length > 0) {
         contextSections.push(
           language === 'bn'
-            ? '\\n\\n[আপনার সংরক্ষিত Knowledge — স্থানীয় নোট]\\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\\n')
+            ? '\n\n[আপনার সংরক্ষিত Knowledge — স্থানীয় নোট]\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\n')
             : language === 'banglish'
-              ? '\\n\\n[Tomar saved Knowledge — local notes]\\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\\n')
-              : '\\n\\n[Relevant saved knowledge — local notes]\\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\\n')
+              ? '\n\n[Tomar saved Knowledge — local notes]\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\n')
+              : '\n\n[Relevant saved knowledge — local notes]\n' + context.relevantKnowledge.map((note) => `• ${note.title}: ${note.content}`).join('\n')
         );
       }
       if (context.relevantMemories.length > 0) {
         contextSections.push(
           language === 'bn'
-            ? '\\n\\n[আপনার অনুমোদিত প্রাসঙ্গিক Memory]\\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\\n')
+            ? '\n\n[আপনার অনুমোদিত প্রাসঙ্গিক Memory]\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\n')
             : language === 'banglish'
-              ? '\\n\\n[Tomar approved relevant memory]\\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\\n')
-              : '\\n\\n[Relevant approved memory]\\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\\n')
+              ? '\n\n[Tomar approved relevant memory]\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\n')
+              : '\n\n[Relevant approved memory]\n' + context.relevantMemories.map((memory) => `• ${memory.text}`).join('\n')
         );
       }
       const replyText = analysis.text + contextSections.join('');
