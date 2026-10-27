@@ -83,27 +83,16 @@ def analyze_network(olt_ip=None, brand=None, port=None, onu=None):
             "মোবাইল_আইপি": "অজানা"
         }
 
-    # Scan only the subnet derived from a real IP. Never invent a device count.
+    # Do not guess a /24 prefix from an IP address; Wi-Fi API does not provide subnet mask.
+    # Scanning is skipped until a verified network prefix is available.
     if ip_value:
-        try:
-            addr = ipaddress.ip_address(ip_value)
-            if addr.version == 4 and not addr.is_unspecified:
-                subnet = str(ipaddress.ip_network(f"{addr}/24", strict=False))
-                scan, scan_err = run_cmd(["nmap", "-sn", subnet], timeout=30)
-                if scan and scan_err is None:
-                    hosts = re.findall(r"\bNmap scan report for\b", scan)
-                    result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_সাবনেট"] = subnet
-                    result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["লাইভ_ডিভাইস_সংখ্যা"] = len(hosts)
-                    result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_স্ট্যাটাস"] = "সম্পন্ন"
-                else:
-                    result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_স্ট্যাটাস"] = "পরীক্ষা করা যায়নি"
-                    result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_কারণ"] = scan_err or "কোনো ফলাফল নেই"
-            else:
-                result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_স্ট্যাটাস"] = "উপযুক্ত IPv4 নেই"
-        except ValueError:
-            result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_স্ট্যাটাস"] = "প্রাপ্ত IP অবৈধ"
+        result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_স্ট্যাটাস"] = "SKIPPED"
+        result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_কারণ"] = (
+            "নেটওয়ার্ক prefix/subnet mask পাওয়া যায়নি; অনুমান করে subnet scan করা হয়নি"
+        )
     else:
-        result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_স্ট্যাটাস"] = "IP না পাওয়ায় স্ক্যান করা হয়নি"
+        result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_স্ট্যাটাস"] = "SKIPPED"
+        result["ওয়াইফাই_ও_লোকাল_নেটওয়ার্ক"]["স্ক্যান_কারণ"] = "বাস্তব IP না পাওয়ায় scan করা হয়নি"
 
     # Optical power requires explicit target details, SNMP access and vendor-correct OID.
     optical = {"অবস্থা": "NOT TESTED", "কারণ": "OLT IP, brand, PON port ও ONU ID দিতে হবে"}
