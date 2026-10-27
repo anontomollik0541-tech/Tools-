@@ -1,0 +1,35 @@
+name: Python diagnostic checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'fix/**']
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Compile diagnostic
+        run: python -m py_compile ai_noc_diagnostic.py
+      - name: Run diagnostic regression tests
+        run: python -m unittest discover -s tests -v
+      - name: Check JSON output and no invented telemetry
+        run: |
+          python ai_noc_diagnostic.py > result.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('result.json').read_text())
+          assert isinstance(data, dict)
+          optical = data['ওএলটি_ফাইবার_টেলিমেট্রি']
+          assert optical.get('অবস্থা') == 'NOT TESTED'
+          assert '-26.2 dBm' not in json.dumps(data, ensure_ascii=False)
+          assert '192.168.1.22' not in json.dumps(data, ensure_ascii=False)
+          assert '4.2 ms' not in json.dumps(data, ensure_ascii=False)
+          print('JSON structure and no-fake-telemetry checks passed')
+          PY
