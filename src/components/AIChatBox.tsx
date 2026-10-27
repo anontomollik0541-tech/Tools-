@@ -13,6 +13,15 @@ import {
   Bot,
 } from 'lucide-react';
 import { ChatMessage, SupportedLanguage } from '../types/assistant';
+import {
+  addKnowledgeNote,
+  clearConversationMemories,
+  listConversationMemories,
+  listKnowledgeNotes,
+  saveConversationMemory,
+  type ApprovedMemory,
+  type KnowledgeNote,
+} from '../services/conversationKnowledge';
 
 interface AIChatBoxProps {
   messages: ChatMessage[];
@@ -33,7 +42,59 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [pasteBoxOpen, setPasteBoxOpen] = useState(false);
   const [pastedLog, setPastedLog] = useState('');
+  const [knowledgePanelOpen, setKnowledgePanelOpen] = useState(false);
+  const [noteTitle, setNoteTitle] = useState('');
+  const [noteContent, setNoteContent] = useState('');
+  const [memoryText, setMemoryText] = useState('');
+  const [memoryApproved, setMemoryApproved] = useState(false);
+  const [knowledgeNotes, setKnowledgeNotes] = useState<KnowledgeNote[]>([]);
+  const [memories, setMemories] = useState<ApprovedMemory[]>([]);
+  const [knowledgeStatus, setKnowledgeStatus] = useState('');
   const chatBottomRef = useRef<HTMLDivElement>(null);
+
+  const refreshKnowledge = () => {
+    setKnowledgeNotes(listKnowledgeNotes());
+    setMemories(listConversationMemories());
+  };
+
+  useEffect(() => {
+    refreshKnowledge();
+  }, []);
+
+  const handleAddKnowledgeNote = () => {
+    try {
+      addKnowledgeNote(noteTitle, noteContent);
+      setNoteTitle('');
+      setNoteContent('');
+      setKnowledgeStatus(language === 'bn' ? 'Knowledge নোট এই ব্রাউজারে সংরক্ষিত হয়েছে।' : 'Knowledge note saved in this browser.');
+      refreshKnowledge();
+    } catch (error) {
+      setKnowledgeStatus(error instanceof Error ? error.message : 'Could not save note.');
+    }
+  };
+
+  const handleSaveMemory = () => {
+    try {
+      saveConversationMemory(memoryText, memoryApproved);
+      setMemoryText('');
+      setMemoryApproved(false);
+      setKnowledgeStatus(language === 'bn' ? 'অনুমোদিত Memory এই ব্রাউজারে সংরক্ষিত হয়েছে।' : 'Approved memory saved in this browser.');
+      refreshKnowledge();
+    } catch (error) {
+      setKnowledgeStatus(error instanceof Error ? error.message : 'Could not save memory.');
+    }
+  };
+
+  const handleClearMemories = () => {
+    if (!window.confirm(language === 'bn' ? 'সব সংরক্ষিত Memory মুছে ফেলবেন?' : 'Clear all saved memories?')) return;
+    try {
+      const count = clearConversationMemories(true);
+      setKnowledgeStatus(`Cleared ${count} saved memories.`);
+      refreshKnowledge();
+    } catch (error) {
+      setKnowledgeStatus(error instanceof Error ? error.message : 'Could not clear memories.');
+    }
+  };
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -113,6 +174,14 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
 
         <div className="flex items-center space-x-2">
           <button
+            onClick={() => setKnowledgePanelOpen((open) => !open)}
+            className="flex items-center space-x-1 px-2.5 py-1 text-xs font-medium rounded bg-sky-900/40 hover:bg-sky-800/50 text-sky-300 border border-sky-700/50 transition-colors"
+            title="Local Knowledge and opt-in Memory"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{language === 'bn' ? 'Knowledge / Memory' : 'Knowledge / Memory'}</span>
+          </button>
+          <button
             onClick={() => setPasteBoxOpen(!pasteBoxOpen)}
             className="flex items-center space-x-1 px-2.5 py-1 text-xs font-medium rounded bg-emerald-900/40 hover:bg-emerald-800/50 text-emerald-300 border border-emerald-700/50 transition-colors"
           >
@@ -129,6 +198,47 @@ export const AIChatBox: React.FC<AIChatBoxProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Browser-local Knowledge and explicit opt-in Memory */}
+      {knowledgePanelOpen && (
+        <section className="p-3 bg-[#0a111a] border-b border-zinc-800 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-xs font-semibold text-sky-300">Local Knowledge & Memory</h3>
+            <span className="text-[10px] text-zinc-500">Saved only in this browser</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-2 rounded-lg border border-zinc-700 p-3">
+              <h4 className="text-xs font-semibold text-zinc-200">Add Knowledge Note</h4>
+              <input value={noteTitle} onChange={(e) => setNoteTitle(e.target.value)} placeholder="Note title" className="w-full bg-[#111722] border border-zinc-700 rounded p-2 text-xs text-zinc-100" />
+              <textarea value={noteContent} onChange={(e) => setNoteContent(e.target.value)} placeholder="Facts, project details, or instructions to reuse..." rows={3} className="w-full bg-[#111722] border border-zinc-700 rounded p-2 text-xs text-zinc-100" />
+              <button onClick={handleAddKnowledgeNote} disabled={!noteTitle.trim() || !noteContent.trim()} className="px-3 py-1.5 rounded bg-sky-700 hover:bg-sky-600 disabled:opacity-40 text-white text-xs">Save Knowledge</button>
+              <p className="text-[10px] text-zinc-400">Saved notes may be appended to replies when they match your question.</p>
+            </div>
+            <div className="space-y-2 rounded-lg border border-zinc-700 p-3">
+              <h4 className="text-xs font-semibold text-zinc-200">Opt-in Memory</h4>
+              <textarea value={memoryText} onChange={(e) => setMemoryText(e.target.value)} placeholder="Write the exact detail you want the assistant to remember..." rows={3} className="w-full bg-[#111722] border border-zinc-700 rounded p-2 text-xs text-zinc-100" />
+              <label className="flex items-start gap-2 text-[11px] text-zinc-300">
+                <input type="checkbox" checked={memoryApproved} onChange={(e) => setMemoryApproved(e.target.checked)} className="mt-0.5" />
+                <span>I explicitly approve saving this memory on this browser.</span>
+              </label>
+              <button onClick={handleSaveMemory} disabled={!memoryText.trim() || !memoryApproved} className="px-3 py-1.5 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white text-xs">Save Memory</button>
+              <button onClick={handleClearMemories} disabled={memories.length === 0} className="ml-2 px-3 py-1.5 rounded bg-rose-950 hover:bg-rose-900 disabled:opacity-40 border border-rose-800 text-rose-200 text-xs">Clear Memories</button>
+            </div>
+          </div>
+          <div className="text-[11px] text-zinc-400">Knowledge notes: {knowledgeNotes.length} · Saved memories: {memories.length}</div>
+          {knowledgeNotes.length > 0 && (
+            <div className="space-y-1">
+              {knowledgeNotes.slice(0, 5).map((note) => <div key={note.id} className="text-[11px] text-zinc-300"><span className="text-sky-300">{note.title}:</span> {note.content}</div>)}
+            </div>
+          )}
+          {memories.length > 0 && (
+            <div className="space-y-1">
+              {memories.slice(-5).reverse().map((memory) => <div key={memory.id} className="text-[11px] text-zinc-300">• {memory.text}</div>)}
+            </div>
+          )}
+          {knowledgeStatus && <p role="status" className="text-[11px] text-emerald-300">{knowledgeStatus}</p>}
+        </section>
+      )}
 
       {/* Paste Log Expandable Box */}
       {pasteBoxOpen && (
