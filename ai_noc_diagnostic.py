@@ -65,8 +65,8 @@ def analyze_network(olt_ip=None, brand=None, port=None, onu=None):
                 wifi_info["মোবাইল_আইপি"] = ip_value
             else:
                 wifi_info["মোবাইল_আইপি"] = "অজানা: API IP দেয়নি"
-            if data.get("rssi") is not None:
-                rssi = data["rssi"]
+            rssi = data.get("rssi")
+            if isinstance(rssi, (int, float)) and not isinstance(rssi, bool):
                 wifi_info["সিগন্যাল_মূল্যায়ন"] = (
                     "ভালো" if rssi >= -60 else "মাঝারি" if rssi >= -70 else "দুর্বল"
                 )
@@ -183,7 +183,7 @@ def analyze_network(olt_ip=None, brand=None, port=None, onu=None):
 if __name__ == "__main__":
     args = sys.argv[1:]
     if "--demo" in args:
-        print(json.dumps({"সিস্টেম_স্ট্যাটাস": "DEMO", "নোট": "এটি simulated data নয়; লাইভ পরীক্ষা চালাতে --demo বাদ দিন।"}, ensure_ascii=False, indent=2))
+        print(json.dumps({"সিস্টেম_স্ট্যাটাস": "DEMO", "নোট": "ডেমো মোডে লাইভ ডায়াগনস্টিক চালানো হয়নি। লাইভ পরীক্ষা চালাতে --demo বাদ দিন।"}, ensure_ascii=False, indent=2))
     else:
         values = [a for a in args if not a.startswith("--")]
         if values and len(values) < 4:
