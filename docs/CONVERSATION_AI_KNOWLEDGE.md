@@ -12,8 +12,13 @@ Branch: `feature/conversation-ai-knowledge`
 - No command is executed and no microphone, SIM, or call audio is accessed.
 - Emotion/intent detection is heuristic and may be wrong. This is not mind-reading.
 
-## Integration point
-The current `src/App.tsx` chat path calls `analyzeUserInputOrLog(text, language, tools)` in `src/services/aiEngine.ts`. This module is intentionally standalone and does not change the existing chat flow. To activate it, add a user-facing Knowledge/Memory panel and merge `buildConversationContext(text)` into the chat analysis path after reviewing the current UI and privacy requirements.
+## Integration
+The feature is wired into the current chat UI and response path:
+- Open **Knowledge / Memory** in the chat header to add a local knowledge note or manage opt-in memories.
+- Notes and memories are saved to this browser's `localStorage`.
+- A saved note or approved memory is appended to the existing rule-based response only when its text matches the current query.
+- Memory save requires checking the explicit approval box; clearing all memories requires a confirmation prompt.
+- Clearing chat history does not clear saved Knowledge or Memory.
 
 ## Quick usage
 ```ts
@@ -30,8 +35,7 @@ saveConversationMemory('User-approved preference', true);
 ```
 
 ## Verification
-This repository uses TypeScript/Vite. After adding the module to the working tree, run:
-- `npm run lint`
-- `npm run build`
+This repository uses TypeScript/Vite. GitHub Actions runs the branch type-check and production build. Confirm the **Branch build verification** workflow passes before merging. The module adds no dependencies.
 
-The module has no new dependencies. It has not yet been wired into the visible dashboard or chat response pipeline.
+## Limits
+The current response engine remains rule-based. This feature retrieves matching saved context; it does not turn the application into a hosted or local large language model. Emotion and intent cues are heuristic and may be wrong.
