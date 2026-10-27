@@ -146,7 +146,7 @@ def analyze_network(olt_ip=None, brand=None, port=None, onu=None):
     # Internet test: success, packet loss, and unknown are separate states.
     ping, ping_err = run_cmd(["ping", "-c", "3", "-W", "2", "8.8.8.8"], timeout=10)
     net = {"পরীক্ষার_লক্ষ্য": "8.8.8.8"}
-    if ping and ping_err is None:
+    if ping:
         sent = re.search(r"(\d+) packets transmitted", ping)
         received = re.search(r"(\d+) (?:packets )?received", ping)
         avg = re.search(r"=\s*[\d.]+/([\d.]+)/[\d.]+", ping)
@@ -158,7 +158,7 @@ def analyze_network(olt_ip=None, brand=None, port=None, onu=None):
                 net["গড়_লেটেন্সি_ms"] = float(avg.group(1))
             net["স্ট্যাটাস"] = "PASS" if recv_n else "ALERT"
         else:
-            net.update({"স্ট্যাটাস": "UNKNOWN", "কারণ": "ping output বোঝা যায়নি"})
+            net.update({"স্ট্যাটাস": "UNKNOWN", "কারণ": ping_err or "ping output বোঝা যায়নি"})
     else:
         net.update({"স্ট্যাটাস": "UNKNOWN", "কারণ": ping_err or "ping কোনো output দেয়নি"})
     result["নেটওয়ার্ক_ড্রপ_ও_রুট_অ্যানালাইসিস"] = net
