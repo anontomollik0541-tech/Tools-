@@ -125,7 +125,8 @@ def analyze_network(olt_ip=None, brand=None, port=None, onu=None):
                     optical.update({
                         "অবস্থা": "RESPONSE_RECEIVED — RX dBm NOT VERIFIED",
                         "SNMP_র_কাঁচা_মান": match.group(1),
-                        "কারণ": "সঠিক vendor MIB/scaling যাচাই ছাড়া raw মানকে dBm বলা নিরাপদ নয়"
+                        "OID_যাচাই": "এই script-এর OID-কে আপনার নির্দিষ্ট OLT firmware/vendor MIB-এর সঙ্গে মিলিয়ে নিশ্চিত করা হয়নি",
+                        "কারণ": "SNMP numeric response পাওয়া গেছে; কিন্তু OID ও scaling যাচাই না হওয়া পর্যন্ত এটি ONU RX dBm বা নিশ্চিত ONU telemetry নয়"
                     })
                 else:
                     optical.update({"অবস্থা": "FAILED", "কারণ": "SNMP response থেকে numeric value পড়া যায়নি",
