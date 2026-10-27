@@ -16,6 +16,8 @@ jobs:
           python-version: '3.x'
       - name: Compile diagnostic
         run: python -m py_compile ai_noc_diagnostic.py
+      - name: Run diagnostic regression tests
+        run: python -m unittest discover -s tests -v
       - name: Check JSON output and no invented telemetry
         run: |
           python ai_noc_diagnostic.py > result.json
