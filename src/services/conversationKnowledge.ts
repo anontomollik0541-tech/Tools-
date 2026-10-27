@@ -126,6 +126,11 @@ export function addKnowledgeNote(
   return note;
 }
 
+/** List saved knowledge notes stored only in this browser. */
+export function listKnowledgeNotes(): KnowledgeNote[] {
+  return [...readStore().notes].sort((a, b) => b.createdAt - a.createdAt);
+}
+
 /** Search locally saved notes. Results are source notes, not generated facts. */
 export function searchKnowledge(query: string, limit = 5): Array<KnowledgeNote & { matchScore: number }> {
   const queryTokens = [...new Set(tokens(query))];
@@ -176,10 +181,24 @@ export function clearConversationMemories(userApproved: boolean): number {
 
 /** Build a compact context packet for the existing chat engine to consume. */
 export function buildConversationContext(message: string, maxNotes = 3) {
+  const queryTokens = [...new Set(tokens(message))];
+  const relevantMemories = readStore().memories
+    .map((memory) => ({
+      ...memory,
+      matchScore: queryTokens.reduce(
+        (score, token) => score + (normalize(memory.text).includes(token) ? 1 : 0),
+        0,
+      ),
+    }))
+    .filter((memory) => memory.matchScore > 0)
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, Math.max(1, Math.min(5, Math.floor(maxNotes))));
+
   return {
     analysis: analyseConversationMessage(message),
     relevantKnowledge: searchKnowledge(message, maxNotes),
+    relevantMemories,
     guidance:
-      'Treat retrieved notes as user-provided context, not guaranteed truth. If notes do not answer the question, say so. Never claim to read minds or infer emotions with certainty.',
+      'Treat retrieved notes and memories as user-provided context, not guaranteed truth. If they do not answer the question, say so. Never claim to read minds or infer emotions with certainty.',
   };
 }
